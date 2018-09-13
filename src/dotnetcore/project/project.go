@@ -1,6 +1,8 @@
 package project
 
 import (
+	"dotnetcore/deployment"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -13,14 +15,20 @@ import (
 	"github.com/go-ini/ini"
 )
 
-type Project struct {
-	buildDir string
-	depDir   string
-	depsIdx  string
+type Manifest interface {
+	AllDependencyVersions(string) []string
 }
 
-func New(buildDir, depDir, depsIdx string) *Project {
-	return &Project{buildDir: buildDir, depDir: depDir, depsIdx: depsIdx}
+type Project struct {
+	buildDir  string
+	depDir    string
+	depsIdx   string
+	manifest  Manifest
+	installer deployment.Installer
+}
+
+func New(buildDir, depDir, depsIdx string, manifest Manifest) *Project {
+	return &Project{buildDir: buildDir, depDir: depDir, depsIdx: depsIdx, manifest: manifest}
 }
 
 func (p *Project) IsPublished() (bool, error) {
@@ -29,6 +37,126 @@ func (p *Project) IsPublished() (bool, error) {
 	} else {
 		return path != "", nil
 	}
+}
+
+func (p *Project) StartCommand() (string, error) {
+	projectPath, err := p.MainPath()
+	if err != nil {
+		return "", err
+	} else if projectPath == "" {
+		return "", nil
+	}
+	runtimeConfigRe := regexp.MustCompile(`\.(runtimeconfig\.json)$`)
+	projRe := regexp.MustCompile(`\.([a-z]+proj)$`)
+
+	if runtimeConfigRe.MatchString(projectPath) {
+		projectPath = runtimeConfigRe.ReplaceAllString(projectPath, "")
+		projectPath = filepath.Base(projectPath)
+	} else if projRe.MatchString(projectPath) {
+		assemblyName, err := p.getAssemblyName(projectPath)
+		if err != nil {
+			return "", err
+		}
+		if assemblyName != "" {
+			projectPath = projRe.ReplaceAllString(assemblyName, "")
+		} else {
+			projectPath = projRe.ReplaceAllString(projectPath, "")
+			projectPath = filepath.Base(projectPath)
+		}
+	}
+
+	return p.publishedStartCommand(projectPath)
+}
+
+func (p *Project) DeploymentType() (interface{}, error) {
+	if path, err := p.RuntimeConfigFile(); err != nil {
+		return nil, err
+	} else if path != "" {
+		runtimeJSON, err := deployment.ParseRuntimeConfig(path)
+		if err != nil {
+			return nil, err
+		}
+		if runtimeJSON.RuntimeOptions.Framework.Name != "" {
+			return deployment.FrameworkDependentDeployment{
+					Project:          p,
+					FrameworkName:    runtimeJSON.RuntimeOptions.Framework.Name,
+					FrameworkVersion: runtimeJSON.RuntimeOptions.Framework.Version,
+					ApplyPatches:     runtimeJSON.RuntimeOptions.ApplyPatches,
+					DepDir:           p.depDir,
+					Installer:        p.installer,
+				},
+				nil
+		} else {
+			return deployment.SelfContainedDeployment{}, nil
+		}
+	}
+	return deployment.SourceDeployment{
+			Project:   p,
+			DepDir:    p.depDir,
+			Installer: p.installer,
+		},
+		nil
+}
+
+func (p *Project) FindMatchingFrameworkVersion(name, version string, applyPatches *bool) (string, error) {
+	// TODO: implement roll forward behavior (https://github.com/dotnet/core-setup/blob/master/Documentation/design-docs/roll-forward-on-no-candidate-fx.md)
+	//	add another argument for roll-forward-on-no-candidate-fx (int: 0, 1, 2)
+	//
+	var err error
+	if applyPatches == nil || *applyPatches {
+		version, err = p.getLatestPatch(name, version)
+		if err != nil {
+			return "", err
+		}
+	}
+	return version, nil
+}
+
+func (p *Project) GetVersionFromDepsJSON() (string, error) {
+	// TODO: consider refactoring the bit where the path is found to make this and RuntimeConfigFile() call the same function.
+	depsJSONFiles, err := filepath.Glob(filepath.Join(p.buildDir, "*.deps.json"))
+	if err != nil {
+		return "", err
+	}
+	if len(depsJSONFiles) == 1 {
+		depsBytes, err := ioutil.ReadFile(depsJSONFiles[0])
+		if err != nil {
+			return "", err
+		}
+
+		var result map[string]interface{}
+		json.Unmarshal(depsBytes, &result)
+		libraries := result["libraries"].(map[string]interface{})
+		for key := range libraries {
+			re := regexp.MustCompile(`(Microsoft.AspNetCore.App)\/(\d\.\d\.\d)`)
+			matchedString := re.FindStringSubmatch(key)
+			if matchedString != nil {
+				return matchedString[2], nil
+			}
+		}
+		return "", fmt.Errorf("Deps.json file didn't contain Microsoft.AspNetCore.App key")
+	}
+	return "", fmt.Errorf("Multiple or no .deps.json files present")
+
+}
+
+func (p *Project) VersionFromProjFile(mainProjectFile, regex, name string) (string, error) {
+	proj, err := ioutil.ReadFile(mainProjectFile)
+	if err != nil {
+		return "", err
+	}
+
+	r := regexp.MustCompile(regex)
+	matches := r.FindStringSubmatch(string(proj))
+	//TODO: Check if version can ever be just *. Currently that wouldn't work here.
+	version := ""
+	if len(matches) > 1 {
+		version = matches[1]
+		if version[len(version)-1] == '*' {
+			return p.getLatestPatch(name, version)
+		}
+	}
+	return version, nil
 }
 
 func (p *Project) ProjFilePaths() ([]string, error) {
@@ -161,31 +289,13 @@ func (p *Project) getAssemblyName(projectPath string) (string, error) {
 	return proj.PropertyGroup.AssemblyName, nil
 }
 
-func (p *Project) StartCommand() (string, error) {
-	projectPath, err := p.MainPath()
+func (p *Project) getLatestPatch(name, version string) (string, error) {
+	v := strings.Split(version, ".")
+	v[2] = "x"
+	versions := p.manifest.AllDependencyVersions(name)
+	latestPatch, err := libbuildpack.FindMatchingVersion(strings.Join(v, "."), versions)
 	if err != nil {
 		return "", err
-	} else if projectPath == "" {
-		return "", nil
 	}
-	runtimeConfigRe := regexp.MustCompile(`\.(runtimeconfig\.json)$`)
-	projRe := regexp.MustCompile(`\.([a-z]+proj)$`)
-
-	if runtimeConfigRe.MatchString(projectPath) {
-		projectPath = runtimeConfigRe.ReplaceAllString(projectPath, "")
-		projectPath = filepath.Base(projectPath)
-	} else if projRe.MatchString(projectPath) {
-		assemblyName, err := p.getAssemblyName(projectPath)
-		if err != nil {
-			return "", err
-		}
-		if assemblyName != "" {
-			projectPath = projRe.ReplaceAllString(assemblyName, "")
-		} else {
-			projectPath = projRe.ReplaceAllString(projectPath, "")
-			projectPath = filepath.Base(projectPath)
-		}
-	}
-
-	return p.publishedStartCommand(projectPath)
+	return latestPatch, nil
 }

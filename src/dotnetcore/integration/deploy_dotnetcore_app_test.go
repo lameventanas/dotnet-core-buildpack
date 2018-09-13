@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("CF Dotnet Buildpack", func() {
+var _ = Describe("CF Dotnet Buildpack", func() {
 	var app *cutlass.App
 	var (
 		latest20RuntimeVersion                           string
@@ -155,7 +155,7 @@ var _ = FDescribe("CF Dotnet Buildpack", func() {
 				app.Memory = "2G"
 			})
 
-			It("publishes and runs, using exact runtime", func() {
+			FIt("publishes and runs, using exact runtime", func() {
 				PushAppAndConfirm(app)
 				Eventually(app.Stdout.String()).Should(ContainSubstring(fmt.Sprintf("Required dotnetruntime versions: [%s]", previous21RuntimeVersion)))
 				Expect(app.GetBody("/")).To(ContainSubstring("Sample pages using ASP.NET Core MVC"))
@@ -169,7 +169,7 @@ var _ = FDescribe("CF Dotnet Buildpack", func() {
 				app.Memory = "2G"
 			})
 
-			It("publishes and runs, using latest patch runtime", func() {
+			FIt("publishes and runs, using latest patch runtime", func() {
 				PushAppAndConfirm(app)
 				Eventually(app.Stdout.String()).Should(ContainSubstring(fmt.Sprintf("Required dotnetruntime versions: [%s]", latest21RuntimeVersion)))
 				Expect(app.GetBody("/")).To(ContainSubstring("Sample pages using ASP.NET Core MVC"))
@@ -183,7 +183,7 @@ var _ = FDescribe("CF Dotnet Buildpack", func() {
 				app.Memory = "2G"
 			})
 
-			It("publishes and runs, using latest patch runtime", func() {
+			FIt("publishes and runs, using latest patch runtime", func() {
 				PushAppAndConfirm(app)
 				Eventually(app.Stdout.String()).Should(MatchRegexp(fmt.Sprintf(`Required dotnetruntime versions: \[\Q%[1]s %[2]s\E\]|\[\Q%[2]s %[1]s\E\]`, latest20RuntimeVersion, latest21RuntimeVersion)))
 				Expect(app.GetBody("/")).To(ContainSubstring("Sample pages using ASP.NET Core MVC"))

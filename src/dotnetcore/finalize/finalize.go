@@ -2,7 +2,6 @@ package finalize
 
 import (
 	"dotnetcore/config"
-	"dotnetcore/project"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,6 +20,18 @@ var cfStackToOS = map[string]string{
 	"cflinuxfs3m": "ubuntu.18.04-x64",
 }
 
+type Project interface {
+	IsPublished() (bool, error)
+	StartCommand() (string, error)
+	DeploymentType() (DeploymentType, error)
+	ProjFilePaths() ([]string, error)
+	MainPath() (string, error)
+}
+
+type DeploymentType interface {
+	InstallFrameworks() error
+}
+
 type Stager interface {
 	BuildDir() string
 	DepsIdx() string
@@ -32,17 +43,12 @@ type Command interface {
 	Run(*exec.Cmd) error
 }
 
-type DotnetRuntime interface {
-	Install(string) error
-}
-
 type Finalizer struct {
-	Stager        Stager
-	Log           *libbuildpack.Logger
-	Command       Command
-	DotnetRuntime DotnetRuntime
-	Config        *config.Config
-	Project       *project.Project
+	Stager  Stager
+	Log     *libbuildpack.Logger
+	Command Command
+	Config  *config.Config
+	Project Project
 }
 
 func Run(f *Finalizer) error {
@@ -53,12 +59,8 @@ func Run(f *Finalizer) error {
 		return err
 	}
 
-	mainPath, err := f.Project.MainPath()
-	if err != nil {
-		return err
-	}
-	if err := f.DotnetRuntime.Install(mainPath); err != nil {
-		f.Log.Error("Unable to install required dotnet runtimes: %s", err.Error())
+	if err := f.InstallFrameworks(); err != nil {
+		f.Log.Error("Unable to install frameworks: %s", err.Error())
 		return err
 	}
 
@@ -84,6 +86,15 @@ func Run(f *Finalizer) error {
 	}
 	releasePath := filepath.Join(f.Stager.BuildDir(), "tmp", "dotnet-core-buildpack-release-step.yml")
 	return libbuildpack.NewYAML().Write(releasePath, data)
+}
+
+func (f *Finalizer) InstallFrameworks() error {
+	deploymentType, err := f.Project.DeploymentType()
+	if err != nil {
+		return err
+	}
+
+	return deploymentType.InstallFrameworks()
 }
 
 func (f *Finalizer) CleanStagingArea() error {

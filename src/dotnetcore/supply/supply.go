@@ -320,6 +320,10 @@ func (s *Supplier) InstallDotnetSdk() error {
 		return err
 	}
 
+	fmt.Printf("===========================================================")
+	stagerdepdir, _ := filepath.Glob(filepath.Join(s.Stager.DepDir(), "dotnet-sdk", "shared", "Microsoft.NETCore.App", "*"))
+	fmt.Printf("dotnet-sdk post install: %s", stagerdepdir)
+
 	return s.Stager.AddBinDependencyLink(filepath.Join(s.Stager.DepDir(), "dotnet-sdk", "dotnet"), "dotnet")
 }
 

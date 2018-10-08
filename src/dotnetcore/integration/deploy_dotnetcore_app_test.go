@@ -39,8 +39,8 @@ var _ = Describe("CF Dotnet Buildpack", func() {
 		app = DestroyApp(app)
 	})
 
-	FContext("deploying a source-based app", func() {
-		FContext("with dotnet-runtime 1.0", func() {
+	Context("deploying a source-based app", func() {
+		Context("with dotnet-runtime 1.0", func() {
 			BeforeEach(func() {
 				SkipUnlessStack("cflinuxfs2")
 				app = cutlass.New(filepath.Join(bpDir, "fixtures", "source_web_1.0"))
@@ -140,7 +140,7 @@ var _ = Describe("CF Dotnet Buildpack", func() {
 			})
 		})
 
-		FContext("when RuntimeFrameworkVersion is explicitly defined in csproj", func() {
+		Context("when RuntimeFrameworkVersion is explicitly defined in csproj", func() {
 			BeforeEach(func() {
 				app = ReplaceFileTemplate(filepath.Join(bpDir, "fixtures", "source_2.1_explicit_runtime_templated"), "netcoreapp2.csproj", "runtime_version", previous21RuntimeVersion)
 				// app = ReplaceFileTemplate(app.Path, "buildpack.yml", "sdk_version", previous21SDKVersion)

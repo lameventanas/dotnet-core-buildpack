@@ -442,14 +442,10 @@ func (p *Project) SourceInstallDotnetRuntime() error {
 
 	p.Log.Error("Runtime Version from TFrameworkV: %s", runtimeVersion)
 
-	fmt.Printf("========================================")
-	fmt.Printf("p.depDir: %s", p.depDir)
 	p.installer.InstallDependency(
 		libbuildpack.Dependency{Name: "dotnet-runtime", Version: runtimeVersion},
 		filepath.Join(p.depDir, "dotnet-sdk"),
 	)
-	files2, _ := filepath.Glob(filepath.Join(p.depDir, "dotnet-sdk", "shared", "Microsoft.NETCore.App", "*"))
-	fmt.Printf("dotnet-sdk/shared/MSNetCoreApp contents: %v", files2)
 	return nil
 }
 

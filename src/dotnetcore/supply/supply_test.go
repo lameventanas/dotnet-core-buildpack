@@ -179,6 +179,30 @@ var _ = Describe("Supply", func() {
 				})
 			})
 
+			Context("Package.json is present", func() {
+				BeforeEach(func() {
+					Expect(ioutil.WriteFile(filepath.Join(buildDir, "package.json"), []byte(""), 0666)).To(Succeed())
+				})
+
+				It("Installs node", func() {
+					mockInstaller.EXPECT().InstallOnlyVersion("node", gomock.Any()).Do(installNode).Return(nil)
+					mockManifest.EXPECT().AllDependencyVersions("node").Return([]string{"6.12.0"})
+					Expect(supplier.InstallNode()).To(Succeed())
+				})
+			})
+
+			Context("Package-lock.json is present", func() {
+				BeforeEach(func() {
+					Expect(ioutil.WriteFile(filepath.Join(buildDir, "package-lock.json"), []byte(""), 0666)).To(Succeed())
+				})
+
+				It("Installs node", func() {
+					mockInstaller.EXPECT().InstallOnlyVersion("node", gomock.Any()).Do(installNode).Return(nil)
+					mockManifest.EXPECT().AllDependencyVersions("node").Return([]string{"6.12.0"})
+					Expect(supplier.InstallNode()).To(Succeed())
+				})
+			})
+
 			Context("Not a published project and bower/npm commands necessary", func() {
 				BeforeEach(func() {
 					Expect(ioutil.WriteFile(filepath.Join(buildDir, "test_app.csproj"), []byte(csprojXml), 0644)).To(Succeed())

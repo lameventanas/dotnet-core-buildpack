@@ -566,6 +566,26 @@ func parseRuntimeConfig(runtimeConfigPath string) (ConfigJSON, error) {
 	return obj, nil
 }
 
+func (p *Project) UsesNode() (bool, error) {
+	if packageLockJSONExists, err := libbuildpack.FileExists(filepath.Join(p.buildDir, "package-lock.json")); err != nil {
+		return false, err
+	} else if packageLockJSONExists {
+		return true, nil
+	}
+
+	if packageJSONExists, err := libbuildpack.FileExists(filepath.Join(p.buildDir, "package.json")); err != nil {
+		return false, err
+	} else if packageJSONExists {
+		return true, nil
+	}
+
+	if os.Getenv("INSTALL_NODE") != "" {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (p *Project) parseProj() (CSProj, error) {
 	mainPath, err := p.MainPath()
 	if err != nil {

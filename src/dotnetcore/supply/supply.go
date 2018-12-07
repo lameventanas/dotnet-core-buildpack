@@ -191,7 +191,9 @@ func (s *Supplier) shouldInstallNode() (bool, error) {
 		return false, nil
 	}
 
-	if os.Getenv("INSTALL_NODE") != "" {
+	if usesNode, err := s.Project.UsesNode(); err != nil {
+		return false, err
+	} else if usesNode {
 		return true, nil
 	}
 

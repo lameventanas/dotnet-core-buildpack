@@ -119,7 +119,9 @@ func (f *Finalizer) CleanStagingArea() error {
 		dirsToRemove = append(dirsToRemove, "dotnet-sdk")
 	}
 
-	if os.Getenv("INSTALL_NODE") != "true" {
+	if usesNode, err := f.Project.UsesNode(); err != nil {
+		return err
+	} else if !usesNode {
 		dirsToRemove = append(dirsToRemove, "node")
 	}
 

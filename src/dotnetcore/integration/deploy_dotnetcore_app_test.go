@@ -218,6 +218,16 @@ var _ = Describe("CF Dotnet Buildpack", func() {
 				PushAppAndConfirm(app)
 			})
 		})
+
+		FContext("with libgdiplus", func() {
+			BeforeEach(func() {
+				app = cutlass.New(filepath.Join(bpDir, "fixtures", "uses_libgdiplus"))
+			})
+
+			It("displays a simple text homepage", func() {
+				PushAppAndConfirm(app)
+			})
+		})
 	})
 
 	Context("deploying an FDD app", func() {

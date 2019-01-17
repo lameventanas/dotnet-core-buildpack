@@ -72,6 +72,11 @@ func Run(s *Supplier) error {
 		return err
 	}
 
+	if err := s.InstallLibgdiplus(); err != nil {
+		s.Log.Error("Unable to install libgdiplus: %s", err.Error())
+		return err
+	}
+
 	if err := s.InstallDotnetSdk(); err != nil {
 		s.Log.Error("Unable to install Dotnet SDK: %s", err.Error())
 		return err
@@ -110,6 +115,14 @@ func (s *Supplier) InstallLibunwind() error {
 	}
 
 	return s.Stager.LinkDirectoryInDepDir(filepath.Join(s.Stager.DepDir(), "libunwind", "lib"), "lib")
+}
+
+func (s *Supplier) InstallLibgdiplus() error {
+	if err := s.Installer.InstallOnlyVersion("libgdiplus", filepath.Join(s.Stager.DepDir(), "libgdiplus")); err != nil {
+		return err
+	}
+
+	return s.Stager.LinkDirectoryInDepDir(filepath.Join(s.Stager.DepDir(), "libgdiplus", "lib"), "lib")
 }
 
 func (s *Supplier) shouldInstallBower() (bool, error) {

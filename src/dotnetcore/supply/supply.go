@@ -72,9 +72,17 @@ func Run(s *Supplier) error {
 		return err
 	}
 
-	if err := s.InstallLibgdiplus(); err != nil {
-		s.Log.Error("Unable to install libgdiplus: %s", err.Error())
+	usesLibgdiplus, err := s.Project.UsesLibrary("System.Drawing.Common")
+	if err != nil {
+		s.Log.Error(`Error searching project for library "System.Drawing.Common": %s`, err.Error())
 		return err
+	}
+
+	if usesLibgdiplus {
+		if err := s.InstallLibgdiplus(); err != nil {
+			s.Log.Error("Unable to install libgdiplus: %s", err.Error())
+			return err
+		}
 	}
 
 	if err := s.InstallDotnetSdk(); err != nil {

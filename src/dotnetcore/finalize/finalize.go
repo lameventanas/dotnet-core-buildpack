@@ -119,9 +119,16 @@ func (f *Finalizer) CleanStagingArea() error {
 		dirsToRemove = append(dirsToRemove, "dotnet-sdk")
 	}
 
+	f.Log.Error("============DECIDING WHETHER TO DELETE NODE============")
 	if os.Getenv("INSTALL_NODE") != "true" {
+		f.Log.Error("============NODE HAS BEEN CHOPPED============")
+		f.Log.Error("%s", os.Getenv("INSTALL_NODE"))
 		dirsToRemove = append(dirsToRemove, "node")
+	} else {
+		f.Log.Info("Keeping Node")
 	}
+
+	f.Log.Error("============FINISHED DECIDING WHETHER TO DELETE NODE============")
 
 	for _, dir := range dirsToRemove {
 		if found, err := libbuildpack.FileExists(filepath.Join(f.Stager.DepDir(), dir)); err != nil {

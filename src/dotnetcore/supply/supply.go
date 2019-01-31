@@ -3,6 +3,7 @@ package supply
 import (
 	"crypto/md5"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -223,7 +224,33 @@ func (s *Supplier) shouldInstallNode() (bool, error) {
 		return false, nil
 	}
 
+	stopMsg := "found package.json"
+	if err := filepath.Walk(s.Stager.BuildDir(), s.findFileFunc("package.json", []string{"node_modules"}, stopMsg)); err.Error() == stopMsg {
+		return true, nil
+	} else if err != nil {
+		return false, err
+	}
+
 	return s.commandsInProjFiles([]string{"npm", "bower"})
+}
+
+func (s *Supplier) findFileFunc(file string, skips []string, stopMsg string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		for _, skip := range skips {
+			if strings.Contains(path, skip) {
+				return filepath.SkipDir
+			}
+		}
+
+		if info.Name() == file {
+			if err := s.Stager.WriteEnvFile("INSTALL_NODE", "true"); err != nil {
+				return err
+			}
+			return errors.New(stopMsg)
+		}
+
+		return nil
+	}
 }
 
 func (s *Supplier) commandsInProjFiles(commands []string) (bool, error) {

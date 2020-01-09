@@ -1,0 +1,76 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/uses_libgdiplus.csproj": {}
+  },
+  "projects": {
+    "/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/uses_libgdiplus.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/uses_libgdiplus.csproj",
+        "projectName": "uses_libgdiplus",
+        "projectPath": "/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/uses_libgdiplus.csproj",
+        "packagesPath": "/Users/davidfreilich/.nuget/packages/",
+        "outputPath": "/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/davidfreilich/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.2"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.2": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.2": {
+          "dependencies": {
+            "Microsoft.AspNetCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            },
+            "Microsoft.AspNetCore.Razor.Design": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[4.5.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.100/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

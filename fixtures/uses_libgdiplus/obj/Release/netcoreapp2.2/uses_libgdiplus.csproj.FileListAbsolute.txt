@@ -1,0 +1,9 @@
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.csprojAssemblyReference.cache
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.RazorAssemblyInfo.cache
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.RazorAssemblyInfo.cs
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.AssemblyInfoInputs.cache
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.AssemblyInfo.cs
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.TagHelpers.input.cache
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.TagHelpers.output.cache
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.dll
+/Users/davidfreilich/workspace/dotnet-core-buildpack/fixtures/uses_libgdiplus/obj/Release/netcoreapp2.2/uses_libgdiplus.pdb

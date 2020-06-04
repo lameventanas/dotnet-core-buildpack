@@ -132,7 +132,7 @@ dependencies:
 - name: libgdiplus
   version: '6.0'
   uri: dependencies/libgdiplus-6.0-cflinuxfs3-559895ae.tar.gz
-  sha256: d9307ac61b39e321cab11da7706e9712b90238e9b1ae6d997ed9f39369fcfbff
+  sha256: 1cd1790f177bbb4a7846664ae1263b86423c45daa5ad104e87e5b9fa93942fda
   cf_stacks:
   - cflinuxfs3
   source: https://github.com/mono/libgdiplus/archive/93f43204a94ac75f468c58334ad07726958f4f26.tar.gz
